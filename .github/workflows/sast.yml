@@ -1,0 +1,19 @@
+name: Perform Mixeway Scan
+jobs:
+  mixeway-scan:
+    name: Mixeway Scanning
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Prepare variables
+      id: vars
+      shell: bash
+      run: |
+        echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+        echo "::set-output name=sha_short::$(git rev-parse HEAD)"
+    - name: Prepare Mixeway docker image
+      run: |
+        docker pull mixeway/scanner:latest
+    - name: Run Scan
+      run: |
+        docker run -e OSS_USERNAME=m01kaczmarczyk@gmail.com -e OSS_KEY=728ec931eba003bc4617e29150f9b90754a12402 -e MIXEWAY_URL=https://hub.mixeway.io -e MIXEWAY_KEY=0610ec69-16f3-4c15-a31a-e2a8d26eb4c8 -e MIXEWAY_PROJECT_ID=192 -e MODE=STANDALONE -e MIXEWAY_PROJECT_NAME=kaczmarczyk_lab_secure_app -e COMMIT_ID=${{ steps.vars.outputs.sha_short }} -e BRANCH=${{ steps.vars.outputs.branch }} -v $(pwd):/opt/sources mixeway/scanner:latest
